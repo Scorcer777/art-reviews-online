@@ -7,11 +7,17 @@ from reviews.validators import username_validator
 
 class ReviewSerializer(serializers.ModelSerializer):
     '''Обработка данных для отзывов.'''
-    author = serializers.StringRelatedField(required=False)
-    score = serializers.IntegerField(min_value=1,
-                                     max_value=10)
-    pub_date = serializers.DateTimeField(read_only=True,
-                                         required=False)
+    author = serializers.StringRelatedField(
+        required=False
+    )
+    score = serializers.IntegerField(
+        min_value=1,
+        max_value=10
+    )
+    pub_date = serializers.DateTimeField(
+        read_only=True,
+        required=False
+    )
 
     class Meta:
         model = Review
@@ -28,8 +34,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     '''Обработка данных для комментариев.'''
     author = serializers.StringRelatedField(required=False)
-    pub_date = serializers.DateTimeField(read_only=True,
-                                         required=False)
+    pub_date = serializers.DateTimeField(
+        read_only=True,
+        required=False
+    )
 
     class Meta:
         model = Comment
