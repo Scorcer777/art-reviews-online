@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Пользовательские роли.
 ROLES = [
@@ -63,3 +64,60 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Review(models.Model):
+    text = models.TextField('Текст отзыва')
+    # При удалении пользователя удалаяется отзыв.
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='reviews',
+                               verbose_name='Автор отзыва')
+    score = models.IntegerField(
+        'Рейтинг произведения',
+        validators=[
+            MaxValueValidator(100),
+            MinValueValidator(1)
+        ],
+    )
+    pub_date = models.DateTimeField('Дата публикации отзыва',
+                                    auto_now_add=True)
+    # При удалении произвеления удалаяется отзыв.
+    title = models.ForeignKey(Title,
+                              on_delete=models.CASCADE,
+                              related_name='reviews',
+                              verbose_name='ID произведения')
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        constraints = [
+            models.UniqueConstraint(fields=['author', 'title'],
+                                    name='unique_author_title')
+        ]
+
+    def __str__(self):
+        return self.text
+
+
+class Comment(models.Model):
+    text = models.TextField('Текст комментария')
+    # При удалении пользователя удалаяется комментарий.
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='comments',
+                               verbose_name='Автор комментария')
+    pub_date = models.DateTimeField('Дата публикации комментария',
+                                    auto_now_add=True)
+    # При удалении отзыва или произведения удалаяется комментарий.
+    review = models.ForeignKey(Review,
+                               on_delete=models.CASCADE,
+                               related_name='comments',
+                               verbose_name='ID отзыва')
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text

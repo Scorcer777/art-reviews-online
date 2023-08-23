@@ -1,8 +1,39 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 
-from reviews.models import Title, User
+from reviews.models import Title, User, Review, Comment
 from reviews.validators import username_validator
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    '''Обработка данных для отзывов.'''
+    author = serializers.StringRelatedField(required=False)
+    score = serializers.IntegerField(min_value=1,
+                                     max_value=10)
+    pub_date = serializers.DateTimeField(read_only=True,
+                                         required=False)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('author', 'title'),
+                message='Вы можете оставить только один отзыв к произведению.'
+            )
+        ]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    '''Обработка данных для комментариев.'''
+    author = serializers.StringRelatedField(required=False)
+    pub_date = serializers.DateTimeField(read_only=True,
+                                         required=False)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -32,7 +63,7 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
         max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all()),],
+        validators=[UniqueValidator(queryset=User.objects.all()), ],
     )
 
     class Meta:
