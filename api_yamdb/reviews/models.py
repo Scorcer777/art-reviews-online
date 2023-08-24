@@ -50,13 +50,65 @@ class User(AbstractUser):
         return self.username
 
 
-class Title(models.Model):
+class CategoryAndGenreModel(models.Model):
     name = models.CharField(
-        'Название',
+        verbose_name='Название',
         max_length=256,
     )
-    year = models.IntegerField('Год выпуска')
-    description = models.TextField('Описание')
+    slug = models.SlugField(
+        verbose_name='Идентификатор',
+        max_length=50,
+        unique=True,
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Category(CategoryAndGenreModel):
+
+    class Meta:
+        verbose_name = 'объект "Категория"'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return self.name
+
+
+class Genre(CategoryAndGenreModel):
+
+    class Meta:
+        verbose_name = 'объект "Жанр"'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
+
+
+class Title(models.Model):
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=256,
+    )
+    year = models.IntegerField(
+        verbose_name='Год выпуска',
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        verbose_name='Категория',
+        related_name='titles',
+        null=True,
+        blank=True,
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        verbose_name='Жанр',
+        related_name='titles',
+    )
 
     class Meta:
         verbose_name = 'объект "Произведение"'
@@ -73,7 +125,7 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name='Автор отзыва'
+        verbose_name='Автор отзыва',
     )
     score = models.IntegerField(
         'Рейтинг произведения',
@@ -84,14 +136,14 @@ class Review(models.Model):
     )
     pub_date = models.DateTimeField(
         'Дата публикации отзыва',
-        auto_now_add=True
+        auto_now_add=True,
     )
     # При удалении произвеления удалаяется отзыв.
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name='ID произведения'
+        verbose_name='ID произведения',
     )
 
     class Meta:
@@ -113,18 +165,18 @@ class Comment(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Автор комментария'
+        verbose_name='Автор комментария',
     )
     pub_date = models.DateTimeField(
         'Дата публикации комментария',
-        auto_now_add=True
+        auto_now_add=True,
     )
     # При удалении отзыва или произведения удалаяется комментарий.
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='ID отзыва'
+        verbose_name='ID отзыва',
     )
 
     class Meta:
