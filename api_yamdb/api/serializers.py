@@ -1,8 +1,93 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 
-from reviews.models import Title, User, Review, Comment
-from reviews.validators import username_validator
+from reviews.models import Category, Genre, Title, User, Review, Comment
+from reviews.validators import username_validator, validate_year
+
+
+class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=[username_validator],
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+
+
+class SignUpSerializer(serializers.Serializer):
+    '''Обработка данных для регистрации.'''
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=[
+            username_validator,
+            UniqueValidator(queryset=User.objects.all()),
+        ]
+    )
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+        validators=[UniqueValidator(queryset=User.objects.all()), ],
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        exclude = ('id', )
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        exclude = ('id', )
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(
+        read_only=True,
+        many=True,
+    )
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year',
+            'rating', 'description',
+            'genre', 'category')
+
+
+class TitlePostSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all(),
+    )
+    year = serializers.IntegerField(validators=[validate_year],)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name',
+            'year', 'description',
+            'genre', 'category')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -42,45 +127,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-
-
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        required=True,
-        max_length=150,
-        validators=[username_validator],
-    )
-
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
-
-
-class SignUpSerializer(serializers.Serializer):
-    '''Обработка данных для регистрации.'''
-    username = serializers.CharField(
-        required=True,
-        max_length=150,
-        validators=[
-            username_validator,
-            UniqueValidator(queryset=User.objects.all()),
-        ]
-    )
-    email = serializers.EmailField(
-        required=True,
-        max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all()), ],
-    )
-
-    class Meta:
-        model = User
-        fields = ('username', 'email')
-
-
-class TitleSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Title
-        fields = '__all__'
