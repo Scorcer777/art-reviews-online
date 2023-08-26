@@ -2,6 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
+
 
 # Пользовательские роли.
 ROLES = [
@@ -49,6 +54,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+    # Создаем методы модератор и админ, чтобы в дальнейшем использовать их как атрибуты класса.
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return (
+            self.role == ADMIN
+            or self.is_superuser
+        )
 
 
 class CategoryAndGenreModel(models.Model):
