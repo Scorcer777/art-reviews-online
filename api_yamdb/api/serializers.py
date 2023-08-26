@@ -40,8 +40,8 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
-        
-        
+
+
 class GenerateTokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
@@ -49,7 +49,7 @@ class GenerateTokenSerializer(serializers.ModelSerializer):
         validators=[username_validator]
     )
     confirmation_code = serializers.CharField(required=True)
-    
+
     class Meta:
         model = User
         fields = ('username', 'confirmation_code',)
@@ -122,13 +122,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title'),
-                message='Вы можете оставить только один отзыв к произведению.'
-            )
-        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
