@@ -6,6 +6,7 @@ from reviews.validators import username_validator, validate_year
 
 
 class UserSerializer(serializers.ModelSerializer):
+    '''Вывод данных о пользователях.'''
     username = serializers.CharField(
         required=True,
         max_length=150,
@@ -16,10 +17,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
+            'last_name', 'bio', 'role',
+        )
 
 
-class SignUpSerializer(serializers.Serializer):
+class SignUpSerializer(serializers.ModelSerializer):
     '''Обработка данных для регистрации.'''
     username = serializers.CharField(
         required=True,
@@ -38,6 +40,19 @@ class SignUpSerializer(serializers.Serializer):
     class Meta:
         model = User
         fields = ('username', 'email')
+        
+        
+class GenerateTokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[username_validator]
+    )
+    confirmation_code = serializers.CharField(required=True)
+    
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -106,7 +121,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),

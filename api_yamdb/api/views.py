@@ -5,23 +5,34 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
-from rest_framework.permissions import AllowAny
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title, User
-from api.serializers import (CategorySerializer, CommentSerializer,
-                             GenreSerializer, ReviewSerializer,
-                             SignUpSerializer, TitlePostSerializer,
-                             TitleReadSerializer)
+from api.serializers import (
+    CategorySerializer, CommentSerializer,
+    GenreSerializer, ReviewSerializer,
+    SignUpSerializer, TitlePostSerializer,
+    TitleReadSerializer, UserSerializer,
+    GenerateTokenSerializer
+)
 
 EMAIL = 'test@yandex.ru'
+
+class UserViewSet(viewsets.ModelViewSet):
+    '''Вывод информации о пользователях.'''
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('username',)
+    lookup_field = 'username'
 
 
 class SignUpView(APIView):
     '''Обрабатка запроса на регистрацию нового пользователя.'''
-    permission_classes = (AllowAny,)
 
     def post(self, request):
         '''Обработка POST-запроса.'''
@@ -55,6 +66,25 @@ class SignUpView(APIView):
             status=status.HTTP_200_OK
         )
 
+
+class GenerateTokenView(APIView):
+    '''Создание токена.'''
+
+    def post(self, request):
+        serializer = GenerateTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        confirmation_code = serializer.validated_data.get('confirmation_code')
+        username = serializer.validated_data.get('username')
+        user = get_object_or_404(User, username=username)
+        
+        # if default_token_generator.check_token(user, confirmation_code):
+        if user is not None and default_token_generator.check_token(user, confirmation_code):
+            token = AccessToken.for_user(user)
+            return Response(
+                {'token': token},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(

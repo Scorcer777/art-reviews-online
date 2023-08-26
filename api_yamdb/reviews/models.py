@@ -2,13 +2,13 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+
 # Пользовательские роли.
 ROLES = [
     ('user', 'Пользователь'),
     ('moderator', 'Модератор'),
     ('admin', 'Администратор'),
 ]
-
 
 class User(AbstractUser):
     username = models.CharField(
