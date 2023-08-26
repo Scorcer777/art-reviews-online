@@ -10,7 +10,10 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
         max_length=150,
-        validators=[username_validator],
+        validators=[
+            username_validator,
+            UniqueValidator(queryset=User.objects.all()),
+        ]
     )
 
     class Meta:
