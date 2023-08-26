@@ -22,6 +22,7 @@ from api.serializers import (
 
 EMAIL = 'test@yandex.ru'
 
+
 class UserViewSet(viewsets.ModelViewSet):
     '''Вывод информации о пользователях.'''
     queryset = User.objects.all()
@@ -76,7 +77,7 @@ class GenerateTokenView(APIView):
         confirmation_code = serializer.validated_data.get('confirmation_code')
         username = serializer.validated_data.get('username')
         user = get_object_or_404(User, username=username)
-        
+
         # if default_token_generator.check_token(user, confirmation_code):
         if user is not None and default_token_generator.check_token(user, confirmation_code):
             token = AccessToken.for_user(user)
@@ -85,6 +86,7 @@ class GenerateTokenView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
