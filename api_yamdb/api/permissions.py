@@ -16,14 +16,14 @@ class IsModeratorAdminAuthorOrReadOnly(permissions.BasePermission):
         '''Определяем допустимые действия с объектом.'''
         if request.method == 'POST':
             return request.user.is_authenticated
-        
+
         # Изменить пост может только автор, админ и суперпользавтель.
         if request.method in ('PUT', 'PATCH'):
             return (
                 request.user.is_admin
                 or obj.author == request.user
             )
-        
+
         # Удалить пост может автор, модератор, админ и суперпользавтель.
         if request.method == 'DELETE':
             return (
