@@ -12,7 +12,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title, User
-from api.permissions import IsAdmin, IsAdminOrReadOnly, IsModeratorAdminAuthorOrReadOnly
+from api.permissions import (
+    IsAdmin, IsAdminOrReadOnly,
+    IsModeratorAdminAuthorOrReadOnly, 
+    PermissionsForReviewsAndComments)
 from api.serializers import (
     CategorySerializer, CommentSerializer,
     GenreSerializer, ReviewSerializer,
@@ -84,7 +87,7 @@ class GenerateTokenView(APIView):
         if user is not None and default_token_generator.check_token(user, confirmation_code):
             token = AccessToken.for_user(user)
             return Response(
-                {'token': token},
+                {'token': str(token)},
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -122,6 +125,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class ReviewViewset(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (PermissionsForReviewsAndComments, )
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -142,6 +146,7 @@ class ReviewViewset(viewsets.ModelViewSet):
 
 class CommentViewset(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = (PermissionsForReviewsAndComments, )
 
     def get_queryset(self):
         review = get_object_or_404(
