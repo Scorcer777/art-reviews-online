@@ -206,6 +206,7 @@ python3 manage.py runserver
 
 - Отправить DELETE-запрос URL `http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/` - **удаление отзыва к указанному произведению(доступно только автору отзыва)**.
 Пример успешного ответа: статус 204_NO_CONTENT
+
 - Отправить POST-запрос URL `http://127.0.0.1:8000/api/v1/titles/{title_id}/reviews/{review_id}/comments/` - **размещение комментария к указанным произведению и отзыву**.
 Пример запроса:
 ```
