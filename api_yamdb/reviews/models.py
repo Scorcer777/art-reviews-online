@@ -7,7 +7,6 @@ MODERATOR = 'moderator'
 ADMIN = 'admin'
 
 
-
 # Пользовательские роли.
 ROLES = [
     ('user', 'Пользователь'),
@@ -54,8 +53,9 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    
-    # Создаем методы модератор и админ, чтобы в дальнейшем использовать их как атрибуты класса.
+
+    # Создаем методы модератор и админ, чтобы в дальнейшем использовать их
+    # как атрибуты класса.
     @property
     def is_moderator(self):
         return self.role == MODERATOR
@@ -69,6 +69,7 @@ class User(AbstractUser):
 
 
 class CategoryAndGenreModel(models.Model):
+    """Абстрактная модель для Category и Genre."""
     name = models.CharField(
         verbose_name='Название',
         max_length=256,
@@ -86,7 +87,7 @@ class CategoryAndGenreModel(models.Model):
 class Category(CategoryAndGenreModel):
 
     class Meta:
-        verbose_name = 'объект "Категория"'
+        verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
     def __str__(self):
@@ -96,7 +97,7 @@ class Category(CategoryAndGenreModel):
 class Genre(CategoryAndGenreModel):
 
     class Meta:
-        verbose_name = 'объект "Жанр"'
+        verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
     def __str__(self):
@@ -129,7 +130,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        verbose_name = 'объект "Произведение"'
+        verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
@@ -138,7 +139,7 @@ class Title(models.Model):
 
 class Review(models.Model):
     text = models.TextField('Текст отзыва')
-    # При удалении пользователя удалаяется отзыв.
+    # При удалении пользователя удаляется отзыв.
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -156,7 +157,7 @@ class Review(models.Model):
         'Дата публикации отзыва',
         auto_now_add=True,
     )
-    # При удалении произвеления удалаяется отзыв.
+    # При удалении произвеления удаляется отзыв.
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -175,7 +176,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     text = models.TextField('Текст комментария')
-    # При удалении пользователя удалаяется комментарий.
+    # При удалении пользователя удаляется комментарий.
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -186,7 +187,7 @@ class Comment(models.Model):
         'Дата публикации комментария',
         auto_now_add=True,
     )
-    # При удалении отзыва или произведения удалаяется комментарий.
+    # При удалении отзыва или произведения удаляется комментарий.
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

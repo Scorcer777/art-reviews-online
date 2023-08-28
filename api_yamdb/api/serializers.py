@@ -1,7 +1,8 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category, Genre, Title, User, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title, User
 from reviews.validators import username_validator, validate_year
 
 
@@ -31,21 +32,20 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=150,
         validators=[
             username_validator,
-            # UniqueValidator(queryset=User.objects.all()),
         ]
     )
     email = serializers.EmailField(
         required=True,
         max_length=254,
-        # validators=[UniqueValidator(queryset=User.objects.all()),],
     )
 
     class Meta:
         model = User
-        fields = ('username', 'email')
+        fields = ('username', 'email',)
 
 
 class GenerateTokenSerializer(serializers.ModelSerializer):
+    """Обработка данных для генерации токена."""
     username = serializers.CharField(
         max_length=150,
         required=True,
@@ -59,20 +59,21 @@ class GenerateTokenSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
+    """Обработка данных для категорий."""
     class Meta:
         model = Category
-        exclude = ('id', )
+        exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
+    """Обработка данных для жанров."""
     class Meta:
         model = Genre
-        exclude = ('id', )
+        exclude = ('id',)
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
+    """Обработка данных для чтения произведений."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
@@ -85,10 +86,12 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year',
             'rating', 'description',
-            'genre', 'category')
+            'genre', 'category',
+        )
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
+    """Обработка данных для добавления произведений."""
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all(),
@@ -105,26 +108,43 @@ class TitlePostSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name',
             'year', 'description',
-            'genre', 'category')
+            'genre', 'category',
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     '''Обработка данных для отзывов.'''
     author = serializers.StringRelatedField(
-        required=False
+        required=False,
     )
     score = serializers.IntegerField(
         min_value=1,
-        max_value=10
+        max_value=10,
     )
     pub_date = serializers.DateTimeField(
         read_only=True,
-        required=False
+        required=False,
     )
 
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+    def validate(self, value):
+        request = self.context['request']
+        if request.method == 'POST':
+            title = get_object_or_404(
+                Title,
+                id=self.context['view'].kwargs['title_id'],
+            )
+            if Review.objects.filter(
+                author=request.user,
+                title=title,
+            ):
+                raise serializers.ValidationError(
+                    'Вы уже оставляли здесь отзыв'
+                )
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -132,7 +152,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(required=False)
     pub_date = serializers.DateTimeField(
         read_only=True,
-        required=False
+        required=False,
     )
 
     class Meta:
