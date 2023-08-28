@@ -5,7 +5,8 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
@@ -14,7 +15,6 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 from api.permissions import (
     IsAdmin, IsAdminOrReadOnly,
-    IsModeratorAdminAuthorOrReadOnly, 
     PermissionsForReviewsAndComments)
 from api.serializers import (
     CategorySerializer, CommentSerializer,
@@ -32,9 +32,32 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('username',)
     lookup_field = 'username'
+
+    @action(
+        detail=False,
+        methods=('GET', 'PATCH'),
+        permission_classes=(IsAuthenticated,),
+    )
+    def me(self, request):
+        '''Получение или изменение информации о себе.'''
+        if request.method == 'PATCH':
+            serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            # Страхуемся от изменения пользовательской роли.
+            if serializer.validated_data.get('role'):
+                serializer.validated_data['role'] = request.user.role
+            serializer.save()
+            return Response(serializer.data)
+
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
 
 
 class SignUpView(APIView):
@@ -53,7 +76,7 @@ class SignUpView(APIView):
                 username=username,
             )
         except IntegrityError:
-            ValidationError(
+            raise ValidationError(
                 'Поля "email" и "username" должны быть уникальными'
             )
 
@@ -83,11 +106,10 @@ class GenerateTokenView(APIView):
         username = serializer.validated_data.get('username')
         user = get_object_or_404(User, username=username)
 
-        # if default_token_generator.check_token(user, confirmation_code):
         if user is not None and default_token_generator.check_token(user, confirmation_code):
-            token = AccessToken.for_user(user)
+            token = str(AccessToken.for_user(user))
             return Response(
-                {'token': str(token)},
+                {'token': token},
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
