@@ -132,7 +132,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, value):
         request = self.context['request']
-        title = get_object_or_404(
+        get_object_or_404(
             Title,
             id=self.context['view'].kwargs['title_id'],
         )
