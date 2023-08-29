@@ -168,7 +168,11 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        unique_together = ('author', 'title')
+        ordering = ('id',)
+        constraints = [
+            models.UniqueConstraint(fields=['author', 'title'],
+                                    name='unique_author_title')
+        ]
 
     def __str__(self):
         return self.text
@@ -198,6 +202,7 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+        ordering = ('id',)
 
     def __str__(self):
         return self.text

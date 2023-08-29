@@ -12,7 +12,6 @@ from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Review, Title, User
 from api.filters import TitleFilter
 from api.permissions import (IsAdmin, IsAdminOrReadOnly,
                              PermissionsForReviewsAndComments)
@@ -21,6 +20,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitlePostSerializer, TitleReadSerializer,
                              UserSerializer)
+from reviews.models import Category, Genre, Review, Title, User
 
 EMAIL = 'test@yandex.ru'
 
