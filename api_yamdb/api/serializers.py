@@ -138,7 +138,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
         if (
             request.method == 'POST'
-            and Review.objects.filter(author=request.user, title=title)
+            and request.user.reviews.all().exists()
         ):
             raise serializers.ValidationError('Вы уже оставляли отзыв здесь.')
         return value
