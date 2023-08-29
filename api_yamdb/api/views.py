@@ -21,8 +21,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitlePostSerializer, TitleReadSerializer,
                              UserSerializer)
-
-EMAIL = 'test@yandex.ru'
+from api_yamdb.settings import EMAIL
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -103,7 +102,7 @@ class GenerateTokenView(APIView):
         username = serializer.validated_data.get('username')
         user = get_object_or_404(User, username=username)
 
-        if user is not None and default_token_generator.check_token(
+        if default_token_generator.check_token(
             user,
             confirmation_code,
         ):
