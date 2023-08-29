@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from reviews.validators import validate_year
+
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
@@ -111,6 +113,7 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         verbose_name='Год выпуска',
+        validators=[validate_year],
     )
     description = models.TextField(
         verbose_name='Описание',
