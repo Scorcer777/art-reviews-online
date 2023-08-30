@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -21,7 +22,6 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              TitlePostSerializer, TitleReadSerializer,
                              UserSerializer, )
 from reviews.models import Category, Genre, Review, Title, User
-from django.conf import settings
 
 
 class UserViewSet(viewsets.ModelViewSet):
