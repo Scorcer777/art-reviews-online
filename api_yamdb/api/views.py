@@ -21,7 +21,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              TitlePostSerializer, TitleReadSerializer,
                              UserSerializer, )
 from reviews.models import Category, Genre, Review, Title, User
-from api_yamdb.settings import EMAIL
+from django.conf import settings
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -81,7 +81,7 @@ class SignUpView(APIView):
         send_mail(
             'Код для подтверждения регистрации',
             f'Ваш код подтверждения: "{confirmation_code}".',
-            EMAIL,
+            settings.EMAIL,
             [email],
             fail_silently=False,
         )
